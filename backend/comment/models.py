@@ -7,13 +7,13 @@ class Comment(models.Model):
     )
     content = fields.TextField()
     user = fields.ForeignKeyField(
-        model_name="user.User",
+        model_name="models.User",
         related_name="user_comments",
         on_delete=fields.SET_NULL,
         null=True,
     )
     story = fields.ForeignKeyField(
-        model_name="story.Story",
+        model_name="models.Story",
         related_name="story_comments",
         on_delete=fields.SET_NULL,
         null=True,

@@ -6,7 +6,7 @@ class Story(models.Model):
         pk=True
     )
     user = fields.ForeignKeyField(
-        model_name="user.User",
+        model_name="models.User",
         related_name="stories",
         null=True,
         on_delete=fields.SET_NULL
