@@ -9,12 +9,14 @@ class Comment(models.Model):
     user = fields.ForeignKeyField(
         model_name="user.User",
         related_name="user_comments",
-        on_delete=fields.SET_NULL
+        on_delete=fields.SET_NULL,
+        null=True,
     )
     story = fields.ForeignKeyField(
         model_name="story.Story",
         related_name="story_comments",
-        on_delete=fields.SET_NULL
+        on_delete=fields.SET_NULL,
+        null=True,
     )
     date = fields.DatetimeField(
         auto_now_add=True

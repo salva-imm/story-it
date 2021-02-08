@@ -8,6 +8,7 @@ class Story(models.Model):
     user = fields.ForeignKeyField(
         model_name="user.User",
         related_name="stories",
+        null=True,
         on_delete=fields.SET_NULL
     )
     email = fields.CharField(
