@@ -1,4 +1,7 @@
 from tortoise import Tortoise, run_async
+import os
+
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 async def init():
@@ -8,9 +11,9 @@ async def init():
     await Tortoise.init(
         db_url='sqlite://db.sqlite3',
         modules={'models': [
-            'comment.models',
+            'user.models',
             'story.models',
-            'user.models'
+            'comment.models',
         ]}
     )
     # Generate the schema
