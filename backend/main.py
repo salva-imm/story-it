@@ -30,7 +30,9 @@ class BasicAuthBackend(AuthenticationBackend):
         return AuthCredentials(["authenticated"]), SimpleUser(username)
 
 
-def home():
+async def home(request):
+    if request.user.is_authenticated:
+        return JSONResponse({'data': request.user.display_name})
     return JSONResponse({"data": "Hello,World"})
 
 
