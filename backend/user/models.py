@@ -6,10 +6,12 @@ class User(models.Model):
         pk=True
     )
     username = fields.CharField(
-        max_length=128
+        max_length=128,
+        unique=True
     )
     email = fields.CharField(
-        max_length=128
+        max_length=128,
+        unique=True
     )
     is_active = fields.BooleanField(
         default=False
