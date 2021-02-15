@@ -10,6 +10,8 @@ from starlette.middleware.authentication import AuthenticationMiddleware
 import base64
 import binascii
 
+from user.api.urls import routes as user_routes
+
 
 class BasicAuthBackend(AuthenticationBackend):
     async def authenticate(self, request):
@@ -43,5 +45,7 @@ middleware = [
 routes = [
     Route('/', home),
 ]
+
+routes.extend(user_routes)
 
 app = Starlette(debug=True, routes=routes, middleware=middleware)
