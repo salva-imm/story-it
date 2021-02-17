@@ -9,6 +9,9 @@ class User(models.Model):
         max_length=128,
         unique=True
     )
+    password = fields.CharField(
+        max_length=512,
+    )
     email = fields.CharField(
         max_length=128,
         unique=True
@@ -22,3 +25,7 @@ class User(models.Model):
 
     def __str__(self) -> str:
         return f"User {self.id}: {self.username}, {self.email}"
+
+    class PydanticMeta:
+        # Let's exclude the created timestamp
+        exclude = ("password",)
