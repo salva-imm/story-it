@@ -1,14 +1,27 @@
+from pydantic import BaseModel, constr
 from starlette.responses import JSONResponse
-from starlette.endpoints import HTTPEndpoint
-
-from tortoise.contrib.pydantic import pydantic_model_creator, pydantic_queryset_creator
 
 from user.models import User
 
+from utils.base import BaseEndpoint
 
-class UserRegister(HTTPEndpoint):
+
+class UserRegister(BaseEndpoint):
+    class Arguments(BaseModel):
+        username: constr(max_length=2)
+        password: constr(max_length=128)
+        email: constr(max_length=128)
+
+    class Validator:
+        def validate_username(self):
+            # TODO: check username uniqueness
+            pass
+
+        def validate_email(self):
+            # TODO: check email uniqueness
+            pass
+
     async def post(self, request):
-        user_obj = {"username": "mehdi", "email": "mehdi73ee@gmail.com", "is_active": True}
-        User_Pydantic = pydantic_model_creator(User)
-        print(User_Pydantic(**user_obj))
+        data = await request.json()
+        self.is_valid(**data)
         return JSONResponse({"data": f"Hello, world!"})
