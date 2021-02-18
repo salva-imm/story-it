@@ -1,3 +1,4 @@
+from init_db import db_arguments
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 from starlette.routing import Route
@@ -9,6 +10,8 @@ from starlette.middleware import Middleware
 from starlette.middleware.authentication import AuthenticationMiddleware
 import base64
 import binascii
+
+from tortoise.contrib.starlette import register_tortoise
 
 from user.api.urls import routes as user_routes
 
@@ -24,7 +27,7 @@ class BasicAuthBackend(AuthenticationBackend):
             if scheme.lower() != 'basic':
                 return
             decoded = base64.b64decode(credentials).decode("ascii")
-        except (ValueError, UnicodeDecodeError, binascii.Error) as exc:
+        except (ValueError, UnicodeDecodeError, binascii.Error):
             raise AuthenticationError('Invalid basic auth credentials')
 
         username, _, password = decoded.partition(":")
@@ -49,3 +52,7 @@ routes = [
 routes.extend(user_routes)
 
 app = Starlette(debug=True, routes=routes, middleware=middleware)
+
+register_tortoise(
+    app, generate_schemas=False, **db_arguments
+)
