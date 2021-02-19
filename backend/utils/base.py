@@ -1,5 +1,6 @@
 import json
 from pydantic import BaseModel
+from tortoise.exceptions import DoesNotExist
 from pydantic.error_wrappers import ValidationError
 from starlette.endpoints import HTTPEndpoint, HTTPException
 
@@ -9,20 +10,25 @@ class BaseEndpoint(HTTPEndpoint):
         def __init__(self, **data):
             pass
 
-    class Validator:
-        pass
-
     async def is_valid(self, **data):
         try:
             self.Arguments(**data)
         except ValidationError as v:
             raise HTTPException(detail=v.json(), status_code=400)
 
-        val_class = self.Validator()
-        for item in vars(self.Validator):
+        this = self.scope['endpoint']
+        for item in vars(this):
             if 'validate' in item:
-                arg = getattr(val_class, item).__code__.co_varnames[1]
-                await getattr(val_class, item)(data.get(arg))
+                arg = getattr(this, item).__code__.co_varnames[1]
+                await getattr(this, item)(data.get(arg))
+
+    @classmethod
+    async def check_unique(cls, model, **kwargs):
+        try:
+            await model.get(**kwargs)
+            raise HTTPException(detail=f"{next(iter(kwargs.keys()))} already exist!", status_code=400)
+        except DoesNotExist:
+            pass
 
 
 class BaseOrmModelSerializer(BaseModel):
