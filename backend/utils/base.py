@@ -1,5 +1,6 @@
 import json
 from pydantic import BaseModel
+from argon2 import PasswordHasher
 from tortoise.exceptions import DoesNotExist
 from pydantic.error_wrappers import ValidationError
 from starlette.endpoints import HTTPEndpoint, HTTPException
@@ -38,3 +39,6 @@ class BaseOrmModelSerializer(BaseModel):
     @classmethod
     def get_response(cls, model):
         return json.loads(cls.from_orm(model).json())
+
+
+password_hasher = PasswordHasher()
