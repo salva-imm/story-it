@@ -6,6 +6,8 @@ from starlette.responses import JSONResponse
 
 from .serializers import UsersSerializer
 
+from argon2 import PasswordHasher
+
 
 class UserRegister(BaseEndpoint):
     class Arguments(BaseModel):
@@ -24,6 +26,8 @@ class UserRegister(BaseEndpoint):
     async def post(self, request):
         data = await request.json()
         await self.is_valid(**data)
+        ph = PasswordHasher()
+        data['password'] = ph.hash(data.get('data'))
         user = await User.create(**data)
         res = UsersSerializer.get_response(user)
         return JSONResponse({"data": res})
