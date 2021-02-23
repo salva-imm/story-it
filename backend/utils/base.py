@@ -1,9 +1,20 @@
+import os
 import json
+from jose import jwt
 from pydantic import BaseModel
 from argon2 import PasswordHasher
+from datetime import datetime, timedelta
 from tortoise.exceptions import DoesNotExist
 from pydantic.error_wrappers import ValidationError
 from starlette.endpoints import HTTPEndpoint, HTTPException
+
+
+SECRET_KEY = os.getenv(
+    "STORY_APP_SECRET_KEY",
+    "test_09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
+)
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_DAYS = 1
 
 
 class BaseEndpoint(HTTPEndpoint):
@@ -42,3 +53,26 @@ class BaseOrmModelSerializer(BaseModel):
 
 
 password_hasher = PasswordHasher()
+
+
+class BaseAuth:
+    def __init__(self, secret, algorithms, expire_days):
+        self.secret = secret
+        self.algorithms = algorithms
+        self.expire_days = expire_days
+
+    def login_required(self, request):
+        jwt.decode(request.headers.get("Authorization"), self.secret, algorithms=[self.algorithms])
+
+    def create_token(self, user):
+        expire_date = datetime.now() + timedelta(days=self.expire_days)
+        payload = {
+            "user_id": user.id,
+            "username": user.username,
+            "expire_date": expire_date.strftime("%m/%d/%Y, %H:%M:%S")
+        }
+        token = jwt.encode({'payload': payload}, self.secret, algorithm=self.algorithms)
+        return token
+
+
+base_auth = BaseAuth(SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_DAYS)

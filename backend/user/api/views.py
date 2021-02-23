@@ -1,8 +1,6 @@
 import os
-from datetime import datetime, timedelta
 
 from user.models import User
-from jose import jwt
 from pydantic import BaseModel, constr
 from tortoise.query_utils import Q
 from tortoise.exceptions import DoesNotExist
@@ -10,7 +8,7 @@ from tortoise.exceptions import DoesNotExist
 from starlette.responses import JSONResponse
 from starlette.endpoints import HTTPException
 
-from utils.base import BaseEndpoint, password_hasher
+from utils.base import BaseEndpoint, password_hasher, base_auth
 from argon2 import exceptions
 from .serializers import UsersSerializer
 
@@ -61,11 +59,5 @@ class Auth(BaseEndpoint):
             password_hasher.verify(user.password, data.get('password'))
         except exceptions.VerifyMismatchError:
             raise HTTPException(detail="User or password is not valid!", status_code=400)
-        expire_date = datetime.now() + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
-        payload = {
-            "user_id": user.id,
-            "username": user.username,
-            "expire_date": expire_date.strftime("%m/%d/%Y, %H:%M:%S")
-        }
-        token = jwt.encode({'payload': payload}, SECRET_KEY, algorithm=ALGORITHM)
+        token = base_auth.create_token(user)
         return JSONResponse({"data": token})
