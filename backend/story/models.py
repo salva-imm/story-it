@@ -11,15 +11,16 @@ class Story(models.Model):
         null=True,
         on_delete=fields.SET_NULL
     )
-    email = fields.CharField(
+    title = fields.CharField(
         max_length=128
     )
-    is_active = fields.BooleanField(
+    content = fields.TextField()
+    draft = fields.BooleanField(
         default=False
     )
-    join_date = fields.DatetimeField(
+    created_at = fields.DatetimeField(
         auto_now_add=True
     )
 
     def __str__(self) -> str:
-        return f"User {self.id}: {self.username}, {self.email}"
+        return f"{self.user} : {self.title}"

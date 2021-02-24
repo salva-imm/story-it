@@ -14,6 +14,7 @@ import binascii
 from tortoise.contrib.starlette import register_tortoise
 
 from user.api.urls import routes as user_routes
+from story.api.urls import routes as story_routes
 
 
 class BasicAuthBackend(AuthenticationBackend):
@@ -50,6 +51,7 @@ routes = [
 ]
 
 routes.extend(user_routes)
+routes.extend(story_routes)
 
 app = Starlette(debug=True, routes=routes, middleware=middleware)
 
