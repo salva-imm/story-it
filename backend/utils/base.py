@@ -1,8 +1,9 @@
 import os
 import json
-from jose import jwt
+from jose import jwt, exceptions
 from pydantic import BaseModel
 from argon2 import PasswordHasher
+from functools import wraps
 from datetime import datetime, timedelta
 from tortoise.exceptions import DoesNotExist
 from pydantic.error_wrappers import ValidationError
@@ -61,8 +62,18 @@ class BaseAuth:
         self.algorithms = algorithms
         self.expire_days = expire_days
 
-    def login_required(self, request):
-        jwt.decode(request.headers.get("Authorization"), self.secret, algorithms=[self.algorithms])
+    def login_required(self, func):
+        @wraps(func)
+        async def check_auth_header(*args, **kwargs):
+            request = args[1]
+            try:
+                info = jwt.decode(request.headers.get("Authorization"), self.secret, algorithms=[self.algorithms])
+            except exceptions.JWTError:
+                raise HTTPException(detail="Token is not valid!", status_code=401)
+            args[1].payload = info.get('payload')
+            value = await func(*args, **kwargs)
+            return value
+        return check_auth_header
 
     def create_token(self, user):
         expire_date = datetime.now() + timedelta(days=self.expire_days)

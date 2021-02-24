@@ -1,6 +1,6 @@
 from story.models import Story
 from pydantic import BaseModel, constr
-from utils.base import BaseEndpoint
+from utils.base import BaseEndpoint, base_auth
 
 from .serializers import StoriesSerializer
 from starlette.responses import JSONResponse
@@ -12,9 +12,11 @@ class CreateStory(BaseEndpoint):
         content: constr(min_length=3)
         draft: bool
 
+    @base_auth.login_required
     async def post(self, request):
         data = await request.json()
         await self.is_valid(**data)
+        data['user_id'] = request.payload.get('user_id')
         story = await Story.create(**data)
         res = StoriesSerializer.get_response(story)
         return JSONResponse({"data": res})
