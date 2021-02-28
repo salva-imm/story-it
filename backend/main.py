@@ -7,6 +7,7 @@ from tortoise.contrib.starlette import register_tortoise
 
 from user.api.urls import routes as user_routes
 from story.api.urls import routes as story_routes
+from comment.api.urls import routes as comment_routes
 
 
 async def home(request):
@@ -21,6 +22,7 @@ routes = [
 
 routes.extend(user_routes)
 routes.extend(story_routes)
+routes.extend(comment_routes)
 
 app = Starlette(debug=True, routes=routes)
 

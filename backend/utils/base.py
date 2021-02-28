@@ -68,8 +68,11 @@ class BaseAuth:
             request = args[1]
             try:
                 info = jwt.decode(request.headers.get("Authorization"), self.secret, algorithms=[self.algorithms])
+                expire_date = datetime.strptime(info['payload']['expire_date'], '%m/%d/%Y, %H:%M:%S')
+                if expire_date < datetime.now():
+                    raise exceptions.JWTError
             except exceptions.JWTError:
-                raise HTTPException(detail="Token is not valid!", status_code=401)
+                raise HTTPException(detail="The token is not valid!", status_code=401)
             args[1].payload = info.get('payload')
             value = await func(*args, **kwargs)
             return value
