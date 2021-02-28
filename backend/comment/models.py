@@ -5,7 +5,6 @@ class Comment(models.Model):
     id = fields.IntField(
         pk=True
     )
-    content = fields.TextField()
     user = fields.ForeignKeyField(
         model_name="models.User",
         related_name="user_comments",
@@ -18,6 +17,7 @@ class Comment(models.Model):
         on_delete=fields.SET_NULL,
         null=True,
     )
+    content = fields.TextField()
     date = fields.DatetimeField(
         auto_now_add=True
     )
