@@ -62,17 +62,21 @@ class BaseAuth:
         self.algorithms = algorithms
         self.expire_days = expire_days
 
+    async def check_auth_header(self, request):
+        try:
+            info = jwt.decode(request.headers.get("Authorization"), self.secret, algorithms=[self.algorithms])
+            expire_date = datetime.strptime(info['payload']['expire_date'], '%m/%d/%Y, %H:%M:%S')
+            if expire_date < datetime.now():
+                raise exceptions.JWTError
+        except exceptions.JWTError:
+            raise HTTPException(detail="The token is not valid!", status_code=401)
+        return info
+
     def login_required(self, func):
         @wraps(func)
         async def check_auth_header(*args, **kwargs):
             request = args[1]
-            try:
-                info = jwt.decode(request.headers.get("Authorization"), self.secret, algorithms=[self.algorithms])
-                expire_date = datetime.strptime(info['payload']['expire_date'], '%m/%d/%Y, %H:%M:%S')
-                if expire_date < datetime.now():
-                    raise exceptions.JWTError
-            except exceptions.JWTError:
-                raise HTTPException(detail="The token is not valid!", status_code=401)
+            info = await self.check_auth_header(request)
             args[1].payload = info.get('payload')
             value = await func(*args, **kwargs)
             return value
@@ -87,6 +91,30 @@ class BaseAuth:
         }
         token = jwt.encode({'payload': payload}, self.secret, algorithm=self.algorithms)
         return token
+
+    def is_owner(self, model, id_place):
+        # id_place could be `headers`, `path_params` and maybe `query_params` in some cases!!
+        def inner(func):
+            @wraps(func)
+            async def wrapper(*args, **kwargs):
+                request = args[1]
+                info = request.get('payload')
+                if not info:
+                    # scream!!
+                    print('hell!')
+                    info = self.check_auth_header(request).get('payload')
+
+                final_id = request.get(id_place).get('id')
+                try:
+                    await model.get(id=final_id, user_id=info.get('user_id'))
+                except DoesNotExist:
+                    raise HTTPException(detail=f"You're not owner of this {model.__name__}!", status_code=403)
+
+                await func(*args, **kwargs)
+
+            return wrapper
+
+        return inner
 
 
 base_auth = BaseAuth(SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_DAYS)
