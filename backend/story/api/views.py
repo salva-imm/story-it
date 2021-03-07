@@ -34,3 +34,7 @@ class DeleteStory(BaseEndpoint):
         story = await Story.create(**data)
         res = StoriesSerializer.get_response(story)
         return JSONResponse({"data": res})
+
+
+class UpdateStory(BaseEndpoint):
+    pass
