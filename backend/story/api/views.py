@@ -20,3 +20,6 @@ class CreateStory(BaseEndpoint):
         story = await Story.create(**data)
         res = StoriesSerializer.get_response(story)
         return JSONResponse({"data": res})
+
+# delete story
+# edit story
