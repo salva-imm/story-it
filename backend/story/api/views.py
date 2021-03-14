@@ -13,6 +13,7 @@ class CreateStory(BaseEndpoint):
         draft: bool
 
     @base_auth.login_required
+    @base_auth.is_owner('Story', 'body')
     async def post(self, request):
         data = await request.json()
         await self.is_valid(**data)
@@ -23,3 +24,19 @@ class CreateStory(BaseEndpoint):
 
 # delete story
 # edit story
+
+class DeleteStory(BaseEndpoint):
+
+    @base_auth.login_required
+    @base_auth.is_owner('Story', 'body')
+    async def delete(self, request):
+        data = await request.json()
+        await self.is_valid(**data)
+        data['user_id'] = request.payload.get('user_id')
+        story = await Story.create(**data)
+        res = StoriesSerializer.get_response(story)
+        return JSONResponse({"data": res})
+
+
+class UpdateStory(BaseEndpoint):
+    pass
